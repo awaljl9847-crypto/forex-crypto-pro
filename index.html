@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827"><title>Forex & Crypto Pro Calculator</title>
+<style>
+:root{--bg:#0b1220;--panel:#121d2e;--panel2:#19263a;--line:#26364d;--text:#edf3fb;--muted:#9aabc1;--green:#25c58a;--red:#ff6b75;--blue:#6da8ff;--gold:#f5c45e}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(150deg,#0b1220,#101b2d 65%,#0b1220);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{padding:22px 18px 14px;max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:11px}.logo{width:43px;height:43px;border-radius:13px;background:linear-gradient(135deg,#25c58a,#2875c7);display:grid;place-items:center;font-size:22px;font-weight:900;color:#071522}.brand h1{font-size:20px;margin:0;letter-spacing:.3px}.brand small{color:var(--muted)}
+.pill{border:1px solid var(--line);background:var(--panel);border-radius:30px;padding:8px 12px;color:var(--muted);font-size:12px}
+main{max-width:1100px;margin:auto;padding:0 16px 100px}.welcome{padding:14px 2px 18px}.welcome h2{font-size:25px;margin:0 0 5px}.welcome p{margin:0;color:var(--muted)}
+nav{display:flex;gap:8px;overflow:auto;padding:5px 0 15px;position:sticky;top:0;background:#0d1726f2;z-index:4;backdrop-filter:blur(12px)}
+nav button{white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:10px 14px;border-radius:12px;font-weight:650}
+nav button.active{background:#1d3b45;border-color:#287d68;color:#72e4b8}
+.view{display:none}.view.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:13px}.card{background:linear-gradient(160deg,#152238,#111c2d);border:1px solid var(--line);border-radius:18px;padding:17px;min-width:0}.span3{grid-column:span 3}.span4{grid-column:span 4}.span5{grid-column:span 5}.span6{grid-column:span 6}.span7{grid-column:span 7}.span8{grid-column:span 8}.span12{grid-column:span 12}
+.kicker{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1px}.metric{font-size:27px;font-weight:800;margin-top:8px}.positive{color:var(--green)}.negative{color:var(--red)}.muted{color:var(--muted)}h3{margin:0 0 14px;font-size:17px}
+label{display:block;color:#b7c5d8;font-size:12px;margin:12px 0 6px}input,select,textarea{width:100%;padding:12px 12px;border:1px solid #30435d;border-radius:11px;background:#0c1727;color:var(--text);font:inherit;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--blue)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+button.primary,.primary{border:0;background:linear-gradient(120deg,#21b982,#168d9a);color:#041a19;font-weight:800;padding:12px 16px;border-radius:11px;cursor:pointer;margin-top:14px}
+button.secondary{border:1px solid var(--line);background:#1a2940;color:var(--text);padding:10px 13px;border-radius:10px;cursor:pointer}
+.result{background:#0b1827;border:1px solid #285345;border-radius:14px;padding:14px;margin-top:14px}.result strong{font-size:23px;color:#6be0b0}.result .muted{font-size:12px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:540px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-weight:600}
+.empty{text-align:center;color:var(--muted);padding:24px}.small{font-size:12px;color:var(--muted);line-height:1.5}.danger{color:var(--red)}.actions{display:flex;gap:8px;flex-wrap:wrap}
+footer{text-align:center;color:#71839a;font-size:12px;padding:20px}
+.market-switch{display:flex;gap:10px;margin:0 0 18px;padding:8px;background:#0b1625;border:1px solid var(--line);border-radius:15px;position:sticky;top:0;z-index:8}
+.market-switch button{flex:1;padding:13px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);font-weight:800;font-size:15px;cursor:pointer}
+.market-switch button.active{background:#1d3b45;border-color:#287d68;color:#72e4b8}
+.market-page{display:none}.market-page.active{display:block}.crypto-view{display:none}.crypto-view.active{display:block}
+.crypto-head{padding:10px 2px 18px}.crypto-head h2{margin:0 0 5px;font-size:24px}.crypto-head p{margin:0;color:var(--muted)}
+.crypto-result{background:#0b1827;border:1px solid #31506d;border-radius:14px;padding:14px;margin-top:14px}
+
+@media(max-width:720px){header{padding-top:17px}.span3,.span4,.span5,.span6,.span7,.span8{grid-column:span 12}.metric{font-size:24px}.welcome h2{font-size:22px}.fields{grid-template-columns:1fr 1fr}}
+@media(max-width:390px){.fields{grid-template-columns:1fr}}
+
+/* Forex calculator: BabyPips-inspired clean vertical layout */
+#forexApp{background:#f2f3f5;color:#252a31;border-radius:18px;padding:0 0 20px}
+#forexApp .welcome{padding:18px 18px 10px}
+#forexApp .welcome h2{color:#252a31}
+#forexApp .welcome p{color:#69717b}
+#forexApp nav{background:#f2f3f5;padding:8px 14px 14px}
+#forexApp nav button{background:#fff;color:#525b65;border-color:#d9dde2}
+#forexApp nav button.active{background:#e4f4e8;border-color:#239a45;color:#167b32}
+#forexApp .card{background:#fff;border:1px solid #e0e3e7;color:#252a31;box-shadow:0 4px 16px #1522380c}
+#forexApp label{color:#505862;font-size:13px;font-weight:650}
+#forexApp input,#forexApp select,#forexApp textarea{background:#f0f1f3;border:1px solid #e0e2e5;color:#252a31;border-radius:24px;text-align:center;padding:12px}
+#forexApp .primary{background:#219b35;color:#fff;border-radius:24px;min-width:180px}
+#forexApp .result{background:#f7faf7;border:1px solid #dce9df;color:#252a31}
+#forexApp .result strong{color:#188b36}
+#forexApp .muted,#forexApp .small{color:#737b84}
+#forexApp .kicker{color:#737b84}
+#forexApp .metric{color:#252a31}
+#forexApp .danger{color:#c53b45}
+#forexApp .table-wrap{color:#252a31}
+#forexApp th,#forexApp td{border-color:#e4e7ea}
+#forexApp .span7{grid-column:span 12}
+#forexApp .span5{grid-column:span 12}
+#forexApp #risk .grid{display:block;max-width:520px;margin:0 auto}
+#forexApp #risk .card.span7{max-width:470px;margin:0 auto}
+#forexApp #risk .card.span5{display:none}
+#forexApp #risk .fields{grid-template-columns:1fr}
+#forexApp #risk .fields>div{width:100%}
+#forexApp #risk .result .fields{grid-template-columns:1fr 1fr}
+#forexApp #risk .result{margin-top:18px}
+#forexApp #risk .primary{display:block;width:100%;margin-top:20px}
+#forexApp #risk h3{text-align:center;font-size:20px}
+#forexApp #risk label{text-align:center}
+#forexApp #risk .result>div:first-child{text-align:center}
+#forexApp #risk #rLot{display:block;text-align:center;font-size:28px}
+#forexApp #risk .result .fields strong{display:block;margin-top:6px}
+@media(max-width:720px){#forexApp #risk .card.span7{margin:0 12px}#forexApp .span7,#forexApp .span5{grid-column:span 12}}
+
+
+#forexApp .fx-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 10px;text-align:center;margin-top:18px}
+#forexApp .fx-result-grid>div:first-child{grid-column:1/-1}
+#forexApp .fx-result-grid strong{display:block;font-size:22px;color:#222b35;margin-top:5px;overflow-wrap:anywhere}
+#forexApp .fx-result-grid>div:first-child strong{font-size:26px}
+
+
+.crypto-trade-card{background:linear-gradient(160deg,#111c2c,#0d1725)!important;border:1px solid #26384e!important;color:#eef4fc!important}
+.crypto-trade-card h3{font-size:20px}
+.crypto-trade-card .crypto-block{padding:14px;margin:12px 0;background:#0b1523;border:1px solid #25354a;border-radius:14px}
+.crypto-trade-card label{color:#aab9cc}
+.crypto-trade-card input,.crypto-trade-card select{background:#111d2d;border-color:#2b3d55;color:#edf4fc;border-radius:9px;text-align:left}
+.crypto-trade-card .fields{gap:0 12px}
+.direction-toggle{display:flex;gap:8px;margin-top:14px}
+.direction-toggle button{flex:1;padding:12px 8px;border-radius:9px;border:1px solid #2b3d55;background:#142237;color:#aab9cc;font-weight:800}
+.direction-toggle button.active{background:#174a37;border-color:#1ba66c;color:#6fe4ad}
+.direction-toggle button#cShort.active{background:#4a202a;border-color:#b34b5b;color:#ff9aa4}
+.crypto-calc-btn{width:100%;border-radius:9px;background:#0e9aa7!important;color:white!important;margin-top:18px}
+.crypto-metrics{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:15px}
+.crypto-metrics>div{background:#101d2d;border:1px solid #293b52;border-radius:11px;padding:12px}
+.crypto-metrics span{display:block;color:#98a9bf;font-size:12px}
+.crypto-metrics strong{display:block;color:#eaf2fc;font-size:18px;margin-top:6px;overflow-wrap:anywhere}
+.crypto-result{background:#0b1625;border-color:#29465d}
+@media(max-width:720px){.crypto-metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:390px){.crypto-metrics{grid-template-columns:1fr}}
+
+</style></head>
+<body>
+<header><div class="brand"><div class="logo">FP</div><div><h1>Forex & Crypto Pro</h1><small>Separate Forex and Crypto calculators</small></div></div><div class="pill">● Offline-ready · USD account</div></header>
+<main>
+<div class="market-switch"><button id="forexSwitch" class="active" type="button" onclick="switchMarket('forex')">Forex</button><button id="cryptoSwitch" type="button" onclick="switchMarket('crypto')">Crypto</button></div>
+<div id="forexApp" class="market-page active">
+<section class="welcome"><h2>Trade smarter. Manage risk.</h2><p>Your trading tools in one simple workspace.</p></section>
+<nav>
+<button data-tab="risk">Forex Calculator</button><button data-tab="home">Dashboard</button><button data-tab="pip">Pip Calculator</button><button data-tab="journal">Journal</button><button data-tab="stats">Statistics</button>
+</nav>
+<section id="home" class="view">
+<div class="grid">
+<div class="card span3"><div class="kicker">Total trades</div><div class="metric" id="mTrades">0</div></div>
+<div class="card span3"><div class="kicker">Win rate</div><div class="metric" id="mWin">0%</div></div>
+<div class="card span3"><div class="kicker">Net P&L</div><div class="metric" id="mPnl">$0.00</div></div>
+<div class="card span3"><div class="kicker">Risk per trade</div><div class="metric" id="mRisk">1%</div></div>
+<div class="card span7"><h3>Quick risk calculator</h3><div class="fields">
+<div><label>Account balance (USD)</label><input id="qBalance" type="number" value="30" min="0" step="any"></div>
+<div><label>Risk (%)</label><input id="qRisk" type="number" value="1" min="0" step=".1"></div>
+<div><label>Stop loss (pips)</label><input id="qSL" type="number" value="20" min=".1" step=".1"></div>
+<div><label>Value per pip per 1.00 lot ($)</label><input id="qPip" type="number" value="10" min=".01" step=".01"></div>
+</div><div class="result"><div class="muted">Suggested position size</div><strong id="qLot">0.05 lots</strong><div class="muted" id="qMoney">Risk amount: $10.00</div></div></div>
+<div class="card span5"><h3>Quick links</h3><p class="small">Use the calculator before entering a trade. Record every closed trade in your journal to track your discipline and results.</p><div class="actions"><button class="secondary" onclick="showTab('risk')">Open risk calculator</button><button class="secondary" onclick="showTab('journal')">Add a trade</button></div></div>
+<div class="card span12"><div class="row"><h3>Recent trades</h3><button class="secondary" onclick="showTab('journal')">View journal</button></div><div id="recent"></div></div>
+</div></section>
+<section id="risk" class="view active"><div class="grid">
+<div class="card span7"><h3>Forex Position Size Calculator</h3>
+<div class="fields">
+<div><label>Account Currency</label><select id="fxCurrency"><option selected>USD</option></select></div>
+<div><label>Account Balance</label><input id="rBalance" type="number" value="30" min="0" step="any"></div>
+<div><label>Risk Percentage</label><input id="rRisk" type="number" value="1" min="0.01" max="100" step="any"></div>
+<div><label>Stop Loss (pips)</label><input id="rSL" type="number" value="20" min="0.1" step="any"></div>
+<div><label>Currency Pair</label><select id="rPair">
+<option value="EURUSD">EUR/USD</option><option value="GBPUSD" selected>GBP/USD</option><option value="AUDUSD">AUD/USD</option><option value="NZDUSD">NZD/USD</option><option value="USDJPY">USD/JPY</option><option value="USDCHF">USD/CHF</option><option value="USDCAD">USD/CAD</option><option value="EURGBP">EUR/GBP</option><option value="EURJPY">EUR/JPY</option><option value="GBPJPY">GBP/JPY</option><option value="GBPCHF">GBP/CHF</option><option value="AUDJPY">AUD/JPY</option><option value="Custom">Other / Custom</option>
+</select></div>
+<div><label>Current Ask Price</label><input id="fxAsk" type="number" value="1.26000" min="0.000001" step="any"></div>
+<div><label>Custom Pip Value per Standard Lot (USD, optional)</label><input id="fxPipOverride" type="number" min="0" step="any" placeholder="Leave blank for estimate"></div>
+</div>
+<button class="primary" type="button" onclick="calcRisk()">Calculate</button>
+<div class="result">
+<div class="muted">Results</div>
+<div class="fx-result-grid">
+<div><div class="muted">Amount at Risk</div><strong id="fxRiskAmount">—</strong></div>
+<div><div class="muted">Position Size (units)</div><strong id="fxUnits">—</strong></div>
+<div><div class="muted">Standard Lots</div><strong id="fxStdLots">—</strong></div>
+<div><div class="muted">Mini Lots</div><strong id="fxMiniLots">—</strong></div>
+<div><div class="muted">Micro Lots</div><strong id="fxMicroLots">—</strong></div>
+</div>
+<div id="rLot" style="display:none">—</div>
+<div class="fields" style="display:none"><strong id="rLoss">—</strong><strong id="rProfit">—</strong></div>
+<div id="rDetails" class="muted" style="margin-top:12px;text-align:center">Enter your trade details, then calculate.</div>
+</div>
+</div></div></section>
+<section id="pip" class="view"><div class="grid">
+<div class="card span6"><h3>Pip distance calculator</h3><div class="fields"><div><label>Pair</label><select id="pPair"><option>EURUSD</option><option>GBPUSD</option><option>AUDUSD</option><option>NZDUSD</option><option>USDCHF</option><option>USDCAD</option><option>USDJPY</option><option>XAUUSD</option></select></div><div><label>Direction</label><select id="pDir"><option value="buy">Buy</option><option value="sell">Sell</option></select></div><div><label>Entry price</label><input id="pEntry" type="number" step="any" value="1.08000"></div><div><label>Exit price</label><input id="pExit" type="number" step="any" value="1.08500"></div><div><label>One pip size (editable)</label><input id="pPipSize" type="number" step="any" min=".00000001" value="0.0001"></div></div><button class="primary" onclick="calcPip()">Calculate pips</button><div class="result"><div class="muted">Price movement</div><strong id="pResult">50.0 pips</strong><div class="muted" id="pInfo">Positive move</div></div></div>
+<div class="card span6"><h3>Risk / reward calculator</h3><div class="fields"><div><label>Stop loss (pips)</label><input id="rrSL" type="number" value="20" min=".1"></div><div><label>Take profit (pips)</label><input id="rrTP" type="number" value="40" min=".1"></div></div><button class="primary" onclick="calcRR()">Calculate R:R</button><div class="result"><div class="muted">Risk : Reward</div><strong id="rrResult">1 : 2.00</strong><div class="muted">A ratio is a planning measure, not a guarantee of profit.</div></div></div>
+</div></section>
+<section id="journal" class="view"><div class="grid">
+<div class="card span5"><h3>Record a closed trade</h3><div class="fields">
+<div><label>Date</label><input id="jDate" type="date"></div><div><label>Pair / instrument</label><select id="jPair"><option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option><option>GBPJPY</option><option>XAUUSD</option><option>NAS100</option><option>BTCUSD</option><option>Other</option></select></div>
+<div><label>Direction</label><select id="jDir"><option>Buy</option><option>Sell</option></select></div><div><label>Result</label><select id="jResult"><option value="win">Win</option><option value="loss">Loss</option><option value="be">Break-even</option></select></div>
+<div><label>Profit / Loss ($)</label><input id="jPnl" type="number" step=".01" value="20"></div><div><label>Lot size</label><input id="jLot" type="number" step=".01" value=".10"></div>
+</div><label>Setup / notes (optional)</label><textarea id="jNotes" rows="3" placeholder="e.g. BOS + POI, London session..."></textarea><button class="primary" onclick="addTrade()">Save trade</button><p class="small">Your journal is saved in this browser on this device. Export a backup regularly.</p></div>
+<div class="card span7"><div class="row"><h3>Trade history</h3><div class="actions"><button class="secondary" onclick="exportTrades()">Export CSV</button><button class="secondary danger" onclick="clearTrades()">Clear</button></div></div><div id="journalTable"></div></div>
+</div></section>
+<section id="stats" class="view"><div class="grid">
+<div class="card span3"><div class="kicker">Wins</div><div class="metric positive" id="sWins">0</div></div><div class="card span3"><div class="kicker">Losses</div><div class="metric negative" id="sLoss">0</div></div><div class="card span3"><div class="kicker">Win rate</div><div class="metric" id="sRate">0%</div></div><div class="card span3"><div class="kicker">Net P&L</div><div class="metric" id="sNet">$0</div></div>
+<div class="card span6"><h3>Performance summary</h3><div id="statsSummary" class="small">Add trades to see your performance.</div></div><div class="card span6"><h3>Profit / loss breakdown</h3><div id="breakdown" class="small">No trades recorded yet.</div></div>
+</div></section>
+<footer>Forex Pro · Personal trading tool · Estimates only, not financial advice.</footer>
+</div>
+<div id="cryptoApp" class="market-page">
+<section class="crypto-head"><h2>Crypto Trading Tools</h2><p>Dedicated calculators for cryptocurrency spot and futures trading.</p></section>
+<nav id="cryptoNav">
+<button class="active" data-ctab="position" type="button">Position Size</button><button data-ctab="pnl" type="button">P&L Calculator</button><button data-ctab="dca" type="button">DCA Average</button><button data-ctab="move" type="button">Price Move %</button><button data-ctab="fees" type="button">Trading Fees</button>
+</nav>
+<section id="c-position" class="crypto-view active"><div class="grid">
+<div class="card span7 crypto-trade-card"><h3>Crypto P&L Calculator</h3>
+<div class="crypto-block"><div class="kicker">Asset & Currency</div>
+<div class="fields">
+<div><label>Asset</label><select id="cCoin"><option>BTC</option><option>ETH</option><option>SOL</option><option>BNB</option><option>XRP</option><option>ADA</option><option>AVAX</option><option>DOGE</option><option value="Custom">Custom</option></select></div>
+<div><label>Quote Currency</label><select id="cQuote"><option>USDT</option><option selected>USD</option><option>USDC</option><option>EUR</option></select></div>
+</div>
+<div class="direction-toggle"><button type="button" id="cLong" class="active" onclick="setCryptoDirection('long')">↗ LONG / BUY</button><button type="button" id="cShort" onclick="setCryptoDirection('short')">↘ SHORT / SELL</button></div>
+</div>
+<div class="crypto-block"><div class="kicker">Trade Inputs</div>
+<div class="fields">
+<div><label>Account Capital / Investment</label><input id="cBalance" type="number" value="1000" min="0" step="any" placeholder="e.g. 1000"></div>
+<div><label>Risk Percentage (%)</label><input id="cRisk" type="number" value="2" min="0.01" max="100" step="any"></div>
+<div><label>Entry Price</label><input id="cEntry" type="number" value="60000" min="0" step="any"></div>
+<div><label>Stop Loss (SL)</label><input id="cStop" type="number" value="59000" min="0" step="any"></div>
+<div><label>Take Profit (TP)</label><input id="cTarget" type="number" value="63000" min="0" step="any"></div>
+<div><label>Optional Exit Price</label><input id="cExitPrice" type="number" min="0" step="any" placeholder="Scenario price (optional)"></div>
+</div>
+</div>
+<div class="crypto-block"><div class="kicker">Leverage & Fees</div>
+<div class="fields">
+<div><label>Leverage</label><select id="cLeverage"><option>1</option><option>2</option><option>3</option><option>5</option><option selected>10</option><option>20</option><option>25</option><option>50</option><option>100</option></select></div>
+<div><label>Trading Fee per Side (%)</label><select id="cFeeRate"><option value="0">0.00%</option><option value="0.02">0.02%</option><option value="0.04" selected>0.04%</option><option value="0.05">0.05%</option><option value="0.06">0.06%</option><option value="0.1">0.10%</option><option value="0.2">0.20%</option></select></div>
+</div>
+<button class="primary crypto-calc-btn" type="button" onclick="calcCryptoPosition()">▣ Calculate Trade</button>
+</div>
+<div class="crypto-result"><div class="muted">Trade Calculation Results</div><div class="crypto-metrics">
+<div><span>Position Quantity</span><strong id="cQty">—</strong></div>
+<div><span>Position Value</span><strong id="cNotional">—</strong></div>
+<div><span>Required Margin</span><strong id="cMargin">—</strong></div>
+<div><span>Risk at Stop Loss</span><strong id="cRiskCash">—</strong></div>
+<div><span>Estimated P&L at TP</span><strong id="cProfit">—</strong></div>
+<div><span>Risk : Reward</span><strong id="cRR">—</strong></div>
+<div><span>Estimated Liquidation Price*</span><strong id="cLiq">—</strong></div>
+<div><span>Estimated Round-trip Fees</span><strong id="cFees">—</strong></div>
+</div><p id="cPositionInfo" class="small">Choose a direction and enter trade prices. *Liquidation is a simplified estimate; actual exchange rules vary.</p></div>
+</div>
+<div class="card span5"><h3>Crypto Trade Guide</h3><p class="small">This calculator sizes the position from your risk budget and stop-loss distance, then estimates notional value, margin, fees and possible P&L.</p><p class="small">Leverage changes required margin and liquidation risk. It does not reduce the dollar loss for a given position size and price movement.</p><p class="small">Liquidation estimates exclude maintenance-margin tiers, funding, exchange-specific mark price, insurance fees and other exchange rules. Always check the exchange's own calculator before opening a leveraged position.</p></div>
+</div></section>
+<section id="c-pnl" class="crypto-view"><div class="grid"><div class="card span6"><h3>Crypto P&L calculator</h3><div class="fields"><div><label>Direction</label><select id="cpDir"><option value="long">Long / Buy</option><option value="short">Short / Sell</option></select></div><div><label>Coin quantity</label><input id="cpQty" type="number" value="0.01" min="0" step="any"></div><div><label>Entry price (USD)</label><input id="cpEntry" type="number" value="60000" min="0" step="any"></div><div><label>Exit price (USD)</label><input id="cpExit" type="number" value="63000" min="0" step="any"></div><div><label>Fee (%) per side</label><input id="cpFee" type="number" value="0.1" min="0" step="any"></div></div><button class="primary" type="button" onclick="calcCryptoPnL()">Calculate P&L</button><div class="result"><div class="muted">Estimated net profit / loss</div><strong id="cpNet">—</strong><p class="small" id="cpDetail"></p></div></div></div></section>
+<section id="c-dca" class="crypto-view"><div class="grid"><div class="card span6"><h3>DCA average entry calculator</h3><p class="small">Add up to four buys to calculate your average purchase price.</p><div class="fields"><div><label>Buy 1 price (USD)</label><input id="dPrice1" type="number" value="60000" min="0" step="any"></div><div><label>Buy 1 amount (USD)</label><input id="dAmount1" type="number" value="100" min="0" step="any"></div><div><label>Buy 2 price (USD)</label><input id="dPrice2" type="number" value="58000" min="0" step="any"></div><div><label>Buy 2 amount (USD)</label><input id="dAmount2" type="number" value="100" min="0" step="any"></div><div><label>Buy 3 price (USD)</label><input id="dPrice3" type="number" value="0" min="0" step="any"></div><div><label>Buy 3 amount (USD)</label><input id="dAmount3" type="number" value="0" min="0" step="any"></div><div><label>Buy 4 price (USD)</label><input id="dPrice4" type="number" value="0" min="0" step="any"></div><div><label>Buy 4 amount (USD)</label><input id="dAmount4" type="number" value="0" min="0" step="any"></div></div><button class="primary" type="button" onclick="calcDCA()">Calculate average</button><div class="result"><div class="muted">Average entry price</div><strong id="dAverage">—</strong><p id="dDetail" class="small"></p></div></div></div></section>
+<section id="c-move" class="crypto-view"><div class="grid"><div class="card span6"><h3>Crypto price movement calculator</h3><div class="fields"><div><label>Starting price (USD)</label><input id="mvStart" type="number" value="60000" min="0" step="any"></div><div><label>Current / target price (USD)</label><input id="mvEnd" type="number" value="63000" min="0" step="any"></div><div><label>Investment amount (USD)</label><input id="mvInvest" type="number" value="100" min="0" step="any"></div></div><button class="primary" type="button" onclick="calcMove()">Calculate movement</button><div class="result"><div class="muted">Price change</div><strong id="mvPercent">—</strong><p id="mvDetail" class="small"></p></div></div></div></section>
+<section id="c-fees" class="crypto-view"><div class="grid"><div class="card span6"><h3>Exchange trading fee calculator</h3><div class="fields"><div><label>Trade value (USD)</label><input id="feeValue" type="number" value="1000" min="0" step="any"></div><div><label>Fee rate (%)</label><input id="feeRate" type="number" value="0.1" min="0" step="any"></div><div><label>Number of sides</label><select id="feeSides"><option value="1">One side (buy OR sell)</option><option value="2" selected>Round trip (buy + sell)</option></select></div></div><button class="primary" type="button" onclick="calcFees()">Calculate fees</button><div class="result"><div class="muted">Estimated total fees</div><strong id="feeTotal">—</strong><p id="feeDetail" class="small"></p></div></div></div></section>
+<footer>Crypto Tools · Estimates only. Check your exchange contract and fee schedule.</footer>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let trades=[];
+try { trades=JSON.parse(localStorage.getItem('forexpro_trades')||'[]'); if(!Array.isArray(trades)) trades=[]; } catch(e) { trades=[]; }
+function money(n){return (n<0?'-$':'$')+Math.abs(n).toFixed(2)}
+function num(id){return Number($(id).value)}
+function validPositive(n){return Number.isFinite(n)&&n>0}
+function floorToStep(value,step){
+  if(!validPositive(step)) return 0;
+  const precision=Math.min(8,Math.max(0,(String(step).split('.')[1]||'').length));
+  return Number((Math.floor((value+1e-10)/step)*step).toFixed(precision));
+}
+function riskCalc(balance,risk,sl,pip,minLot,step){
+  const amount=balance*risk/100;
+  const riskPerLot=sl*pip;
+  const rawLot=riskPerLot>0?amount/riskPerLot:0;
+  const lot=floorToStep(rawLot,step);
+  return {amount,riskPerLot,rawLot,lot,minLot,actualRisk:lot*riskPerLot};
+}
+function calcRisk(){
+  const balance=num('rBalance'),risk=num('rRisk'),sl=num('rSL'),ask=num('fxAsk');
+  const pair=$('rPair').value,override=num('fxPipOverride');
+  const riskCash=balance*risk/100;
+  if(!validPositive(balance)||!validPositive(risk)||risk>100||!validPositive(sl)||!validPositive(ask)){
+    $('fxRiskAmount').textContent='—';$('fxUnits').textContent='—';$('fxStdLots').textContent='—';$('fxMiniLots').textContent='—';$('fxMicroLots').textContent='—';
+    $('rDetails').textContent='Please enter a positive balance, risk percentage, stop-loss distance and current ask price.';return;
+  }
+  // USD account. Standard-lot pip value: $10 for USD-quoted majors; converted for USD-base pairs.
+  let pipPerStandard=10, note='Approximate pip value. Confirm with your broker.';
+  if(validPositive(override)){pipPerStandard=override;note='Using your custom pip value per standard lot.';}
+  else if(['USDJPY','USDCHF','USDCAD'].includes(pair)){pipPerStandard=1000/ask;note='Approximate USD-converted pip value using the entered ask price.';}
+  else if(pair==='Custom'||!['EURUSD','GBPUSD','AUDUSD','NZDUSD'].includes(pair)){pipPerStandard=10;note='Cross-pair pip value is only an estimate. Enter a custom pip value for accuracy.';}
+  const standardLots=riskCash/(sl*pipPerStandard);
+  const units=standardLots*100000;
+  $('fxRiskAmount').textContent=money(riskCash);
+  $('fxUnits').textContent=units.toLocaleString('en-US',{maximumFractionDigits:2});
+  $('fxStdLots').textContent=standardLots.toFixed(4);
+  $('fxMiniLots').textContent=(standardLots*10).toFixed(3);
+  $('fxMicroLots').textContent=(standardLots*100).toFixed(2);
+  $('rLot').textContent=standardLots.toFixed(4)+' lots';
+  $('rLoss').textContent='—';$('rProfit').textContent='—';
+  $('rDetails').textContent=`${pair} · Estimated pip value: ${money(pipPerStandard)} per standard lot · ${note} Position size assumes 100,000 units per standard lot. Spread, commission, slippage and conversion-rate changes are not included.`;
+}
+function quick(){
+  const b=num('qBalance'),r=num('qRisk'),sl=num('qSL'),pip=num('qPip');
+  if(!validPositive(b)||!validPositive(r)||r>100||!validPositive(sl)||!validPositive(pip)){
+    $('qLot').textContent='Check inputs';$('qMoney').textContent='Use positive values; risk must be 100% or less.';return;
+  }
+  const x=riskCalc(b,r,sl,pip,0.01,0.01);
+  $('qLot').textContent=x.lot>=0.01?x.lot.toFixed(2)+' lots':'Below 0.01 lot';
+  $('qMoney').textContent=`Target risk: ${money(x.amount)} · Risk after 0.01 lot rounding: ${money(x.actualRisk)}`;
+}
+function applyInstrumentPreset(){
+  // Keep the pip/point value editable for every broker and instrument.
+  calcRisk();
+}
+function calcPip(){
+  const e=num('pEntry'),x=num('pExit'),dir=$('pDir').value,pip=num('pPipSize');
+  if(!Number.isFinite(e)||!Number.isFinite(x)||e<=0||x<=0||!validPositive(pip)){
+    $('pResult').textContent='Check prices / pip size';$('pInfo').textContent='Enter valid prices and a positive pip size from your broker.';return;
+  }
+  const n=(dir==='buy'?x-e:e-x)/pip;
+  $('pResult').textContent=(n>=0?'+':'')+n.toFixed(1)+' pips';
+  $('pInfo').textContent=n>0?'Favourable price movement':n<0?'Unfavourable price movement':'No price movement';
+}
+function setPipSize(){
+  const pair=$('pPair').value;
+  $('pPipSize').value=pair==='USDJPY'?'0.01':pair==='XAUUSD'?'0.1':'0.0001';
+  calcPip();
+}
+function calcRR(){
+  const sl=num('rrSL'),tp=num('rrTP');
+  $('rrResult').textContent=validPositive(sl)&&Number.isFinite(tp)&&tp>=0?'1 : '+(tp/sl).toFixed(2):'Check inputs';
+}
+function showTab(tab){
+  document.querySelectorAll('#forexApp .view').forEach(v=>v.classList.toggle('active',v.id===tab));
+  document.querySelectorAll('#forexApp nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  if(tab==='journal'||tab==='stats'||tab==='home')render();
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function addTrade(){
+  const pnl=num('jPnl'),lot=num('jLot');
+  if(!Number.isFinite(pnl)||!$('jDate').value||!validPositive(lot)){alert('Please enter a date, valid P/L amount and lot size greater than zero.');return;}
+  trades.unshift({id:Date.now(),date:$('jDate').value,pair:$('jPair').value,dir:$('jDir').value,result:$('jResult').value,pnl,lot,notes:$('jNotes').value});
+  save();$('jNotes').value='';render();
+}
+function save(){try{localStorage.setItem('forexpro_trades',JSON.stringify(trades));}catch(e){alert('Could not save: browser storage may be disabled or full. Export a CSV backup.');}}
+function render(){
+  const wins=trades.filter(t=>t.result==='win').length,loss=trades.filter(t=>t.result==='loss').length,closed=wins+loss;
+  const net=trades.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+  const grossWin=trades.filter(t=>Number(t.pnl)>0).reduce((s,t)=>s+Number(t.pnl),0);
+  const grossLoss=Math.abs(trades.filter(t=>Number(t.pnl)<0).reduce((s,t)=>s+Number(t.pnl),0));
+  const rate=closed?wins/closed*100:0;
+  $('mTrades').textContent=trades.length;$('mWin').textContent=rate.toFixed(1)+'%';$('mPnl').textContent=money(net);$('mPnl').className='metric '+(net>=0?'positive':'negative');$('mRisk').textContent=$('qRisk').value+'%';
+  $('sWins').textContent=wins;$('sLoss').textContent=loss;$('sRate').textContent=rate.toFixed(1)+'%';$('sNet').textContent=money(net);$('sNet').className='metric '+(net>=0?'positive':'negative');
+  $('statsSummary').innerHTML=`Total recorded trades: <b>${trades.length}</b><br>Break-even: <b>${trades.filter(t=>t.result==='be').length}</b><br>Average P/L per trade: <b>${money(trades.length?net/trades.length:0)}</b><br>Profit factor: <b>${grossLoss?(grossWin/grossLoss).toFixed(2):grossWin?'∞':'—'}</b>`;
+  $('breakdown').innerHTML=`Gross profit: <b class="positive">${money(grossWin)}</b><br>Gross loss: <b class="negative">${money(-grossLoss)}</b><br>Net result: <b>${money(net)}</b>`;
+  const rows=trades.slice(0,30).map(t=>`<tr><td>${esc(t.date)}</td><td>${esc(t.pair)}</td><td>${esc(t.dir)}</td><td>${esc(String(t.result).toUpperCase())}</td><td class="${Number(t.pnl)>=0?'positive':'negative'}">${money(Number(t.pnl)||0)}</td><td>${(Number(t.lot)||0).toFixed(2)}</td><td>${esc(t.notes||'')}</td><td><button class="secondary" onclick="delTrade(${Number(t.id)})">×</button></td></tr>`).join('');
+  $('journalTable').innerHTML=trades.length?`<div class="table-wrap"><table><thead><tr><th>Date</th><th>Pair</th><th>Side</th><th>Result</th><th>P/L</th><th>Lot</th><th>Notes</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:'<div class="empty">No trades yet. Add your first closed trade.</div>';
+  $('recent').innerHTML=trades.length?`<div class="table-wrap"><table><thead><tr><th>Date</th><th>Pair</th><th>Result</th><th>P/L</th></tr></thead><tbody>${trades.slice(0,5).map(t=>`<tr><td>${esc(t.date)}</td><td>${esc(t.pair)}</td><td>${esc(t.result)}</td><td class="${Number(t.pnl)>=0?'positive':'negative'}">${money(Number(t.pnl)||0)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Your recent trades will appear here.</div>';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function delTrade(id){trades=trades.filter(t=>Number(t.id)!==id);save();render()}
+function clearTrades(){if(confirm('Delete all saved trades? Export a backup first if needed.')){trades=[];save();render()}}
+function exportTrades(){
+  const csv='Date,Pair,Direction,Result,PL,Lot,Notes\n'+trades.map(t=>[t.date,t.pair,t.dir,t.result,t.pnl,t.lot,'"'+String(t.notes||'').replace(/"/g,'""')+'"'].join(',')).join('\n');
+  const a=document.createElement('a'),url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.href=url;a.download='forex-pro-journal.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+['qBalance','qRisk','qSL','qPip'].forEach(id=>$(id).addEventListener('input',quick));
+['rBalance','rRisk','rSL','fxAsk','fxPipOverride'].forEach(id=>$(id).addEventListener('input',calcRisk));
+$('rPair').addEventListener('change',()=>{const p=$('rPair').value;$('fxAsk').value=({EURUSD:'1.08000',GBPUSD:'1.26000',AUDUSD:'0.65000',NZDUSD:'0.60000',USDJPY:'150.000',USDCHF:'0.88000',USDCAD:'1.37000',EURGBP:'0.85000',EURJPY:'162.000',GBPJPY:'189.000',GBPCHF:'1.11000',AUDJPY:'98.000'}[p]||'1.00000');calcRisk();});
+['pDir','pEntry','pExit','pPipSize'].forEach(id=>$(id).addEventListener('input',calcPip));
+$('pPair').addEventListener('change',setPipSize);
+['rrSL','rrTP'].forEach(id=>$(id).addEventListener('input',calcRR));
+
+function switchMarket(market){
+  const forex=market==='forex';$('forexApp').classList.toggle('active',forex);$('cryptoApp').classList.toggle('active',!forex);
+  $('forexSwitch').classList.toggle('active',forex);$('cryptoSwitch').classList.toggle('active',!forex);
+}
+document.querySelectorAll('#cryptoNav button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.crypto-view').forEach(v=>v.classList.toggle('active',v.id==='c-'+b.dataset.ctab));
+  document.querySelectorAll('#cryptoNav button').forEach(x=>x.classList.toggle('active',x===b));
+}));
+function cv(id){return Number($(id).value)}
+function cryptoMoney(v){return (v<0?'-$':'$')+Math.abs(v).toFixed(2)}
+let cryptoDirection='long';
+function setCryptoDirection(dir){
+ cryptoDirection=dir;
+ $('cLong').classList.toggle('active',dir==='long');
+ $('cShort').classList.toggle('active',dir==='short');
+ calcCryptoPosition();
+}
+function calcCryptoPosition(){
+ const capital=cv('cBalance'),risk=cv('cRisk'),entry=cv('cEntry'),stop=cv('cStop'),target=cv('cTarget'),fee=cv('cFeeRate'),lev=cv('cLeverage');
+ const long=cryptoDirection==='long';
+ const stopValid=long?stop<entry:stop>entry;
+ const targetValid=long?target>entry:target<entry;
+ const ids=['cQty','cNotional','cMargin','cRiskCash','cProfit','cRR','cLiq','cFees'];
+ if(!(capital>0&&risk>0&&risk<=100&&entry>0&&stop>0&&stopValid&&fee>=0&&lev>=1)){
+  ids.forEach(id=>$(id).textContent='—');
+  $('cPositionInfo').textContent='Check inputs: for LONG, Stop Loss must be below Entry and Take Profit above Entry; for SHORT, the reverse applies.';return;
+ }
+ const riskBudget=capital*risk/100;
+ const priceRisk=Math.abs(entry-stop);
+ // Fee-aware quantity: include estimated entry and stop-exit fees in the risk budget.
+ const riskPerCoin=priceRisk+(entry+stop)*fee/100;
+ const qty=riskBudget/riskPerCoin;
+ const notional=qty*entry,margin=notional/lev;
+ const roundFees=qty*(entry+stop)*fee/100;
+ const loss=qty*(priceRisk+(entry+stop)*fee/100);
+ let profit=null;
+ if(target>0&&targetValid)profit=qty*(Math.abs(target-entry)-(entry+target)*fee/100);
+ const rr=profit===null?null:Math.abs(profit)/loss;
+ const mmr=0.005; // illustrative 0.5% maintenance margin only
+ const liquidation=long?entry*(1-1/lev+mmr):entry*(1+1/lev-mmr);
+ const exitScenario=cv('cExitPrice');
+ $('cQty').textContent=qty.toFixed(8)+' '+$('cCoin').value;
+ $('cNotional').textContent=cryptoMoney(notional);
+ $('cMargin').textContent=cryptoMoney(margin);
+ $('cRiskCash').textContent='-'+cryptoMoney(loss);
+ $('cProfit').textContent=profit===null?'—':(profit>=0?'+':'')+cryptoMoney(profit);
+ $('cRR').textContent=rr===null?'—':'1 : '+rr.toFixed(2);
+ $('cLiq').textContent=cryptoMoney(liquidation);
+ $('cFees').textContent=cryptoMoney(roundFees);
+ $('cPositionInfo').textContent=`${$('cCoin').value}/${$('cQuote').value} · ${long?'LONG / BUY':'SHORT / SELL'} · Risk budget ${cryptoMoney(riskBudget)} · ${lev}x leverage. ${exitScenario>0?`Scenario at exit ${exitScenario}: ${cryptoMoney(qty*((exitScenario-entry)*(long?1:-1)-(entry+exitScenario)*fee/100))}. `:''}Liquidation uses a simplified 0.5% maintenance-margin assumption only; actual exchange liquidation can differ substantially. Funding, slippage and spread excluded.`;
+}
+function calcCryptoPnL(){const q=cv('cpQty'),a=cv('cpEntry'),b=cv('cpExit'),f=cv('cpFee');if(!(q>0&&a>0&&b>0&&f>=0)){$('cpNet').textContent='Check inputs';return;}const gross=(b-a)*q*($('cpDir').value==='long'?1:-1),fees=(a+b)*q*f/100,net=gross-fees;$('cpNet').textContent=(net>=0?'+':'')+cryptoMoney(net);$('cpNet').style.color=net>=0?'var(--green)':'var(--red)';$('cpDetail').textContent=`Gross P&L: ${cryptoMoney(gross)} · Estimated entry + exit fees: ${cryptoMoney(fees)}. Funding, spread and slippage excluded.`;}
+function calcDCA(){let qty=0,cost=0;for(let i=1;i<=4;i++){const p=cv('dPrice'+i),a=cv('dAmount'+i);if(a<0||p<0||(a>0&&p<=0)){$('dAverage').textContent='Check inputs';return;}if(a>0){qty+=a/p;cost+=a;}}if(!qty){$('dAverage').textContent='—';$('dDetail').textContent='Enter at least one buy amount and price.';return;}$('dAverage').textContent=cryptoMoney(cost/qty);$('dDetail').textContent=`Total invested: ${cryptoMoney(cost)} · Total coin quantity: ${qty.toFixed(8)}`;}
+function calcMove(){const a=cv('mvStart'),b=cv('mvEnd'),inv=cv('mvInvest');if(!(a>0&&b>0&&inv>=0)){$('mvPercent').textContent='Check inputs';return;}const pct=(b-a)/a*100,change=inv*pct/100;$('mvPercent').textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';$('mvPercent').style.color=pct>=0?'var(--green)':'var(--red)';$('mvDetail').textContent=`Price change: ${cryptoMoney(b-a)} per coin · Approx. value change on ${cryptoMoney(inv)}: ${change>=0?'+':''}${cryptoMoney(change)} (fees excluded).`;}
+function calcFees(){const v=cv('feeValue'),r=cv('feeRate'),s=cv('feeSides');if(!(v>=0&&r>=0)){$('feeTotal').textContent='Check inputs';return;}const f=v*r/100*s;$('feeTotal').textContent=cryptoMoney(f);$('feeDetail').textContent=`${s} side(s) at ${r}% on ${cryptoMoney(v)} trade value.`;}
+
+$('jDate').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+quick();calcRisk();calcPip();calcRR();render();calcCryptoPosition();calcCryptoPnL();calcDCA();calcMove();calcFees();
+</script></body></html>
